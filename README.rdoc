@@ -1,7 +1,7 @@
 == README
 
 This project will find the current time for the selected country/region based on the latitude and longitude
-sourced for the geonames api.
+sourced from the geonames api.
 
 Make sure you run <tt>rake db:setup</tt> to ensure the proper seeding of the database.
 
