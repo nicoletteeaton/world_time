@@ -1,0 +1,63 @@
+.jumbotron
+  %h1 World Time
+  %p
+    What time is it in your world? Find out.
+    .row
+      .col-sm-6.col-md-4.col-md-offset-4
+        =form_for(UserSelection.new) do |f|
+          %div.form-group
+            =f.label :country_id, 'Country'
+            =f.select(:country_id, options_for_select(@countries.map{ |r| [r.name , r.id] }), {include_blank: true}, {class: 'form-control'})
+            %br
+            %br
+            =f.label :region_id, 'Region'
+            =f.select :region_id, [], {}, {class: 'form-control'}
+            %br
+          =f.submit 'Find Time', class: 'btn btn-lg btn-primary btn-block', data: { disable_with: "Finding the time..." }
+
+        -if @last_selection
+
+          %div.panel.panel-info
+            %div.panel-heading{:style => "border-color:white;"}
+              %h3.panel-title{:style => "font-size:22px;text-align:center;"}
+                ="#{@last_selection.country.name}"
+                -if @last_selection.region
+                  =" - #{@last_selection.region.name}"
+            %div.panel-body{:style => "padding:0px;font-size:22px;text-align:center;"}
+              =@last_selection.region ? printable_time(timezone_lookup(@last_selection.region.lat, @last_selection.region.lng)) : printable_time(timezone_lookup(@last_selection.country.lat, @last_selection.country.lng))
+
+
+
+%table.table.table-bordered.table-striped.sortable
+  %thead
+    %th{:style => "font-size: 26px", :colspan => "3"} #{current_user.name}'s Time Zones
+    %tr
+      %th{class: 'AZ down sorted', data: {defaultsign: 'nospan', defaultsort: 'asc', sortcolumn: '1', sortkey: '0-0'}} Country
+      %th{class: 'AZ down sorted', data: {defaultsign: 'nospan', defaultsort: 'asc', sortcolumn: '1', sortkey: '0-0'}} Region
+      %th Current Time
+  %tbody
+    %tr
+    -@selections.each do |selection|
+      %tr
+        -if selection.region
+          %td=link_to selection.country.name, "https://en.wikipedia.org/wiki/#{selection.country.name}"
+          %td=link_to selection.region.name, "https://en.wikipedia.org/wiki/#{selection.region.name}"
+          %td=printable_time(timezone_lookup(selection.region.lat, selection.region.lng))
+        -else
+          %td=link_to selection.country.name, "https://en.wikipedia.org/wiki/#{selection.country.name}"
+          %td=''
+          %td=printable_time(timezone_lookup(selection.country.lat, selection.country.lng))
+
+
+
+
+:javascript
+
+    var subTypeOptions = #{Country.region_select};
+    var parentType = document.getElementById('user_selection_country_id');
+    var subType = document.getElementById('user_selection_region_id');
+    var currentSubtype = '';
+
+
+    parentType.addEventListener('change', populateSubType);
+    document.addEventListener('DOMContentLoaded', populateSubType);
